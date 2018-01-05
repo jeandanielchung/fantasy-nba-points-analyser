@@ -5,7 +5,7 @@ class Game:
 
 	def convert_date(self, date_str):
 		month, day = date_str.split('/')
-		year = 2017 if month >= 10 else 2018
+		year = 2017 if int(month) >= 10 else 2018
 		return datetime.date(year, int(month), int(day))
 
 	def __init__(self, stats):
