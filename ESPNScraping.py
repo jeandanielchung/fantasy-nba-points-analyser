@@ -38,6 +38,9 @@ def filter_by_min(games, operator, value):
 	else:
 		return filter(lambda x: x.min > value, games)
 
+def filter_by_recent(games, number):
+	return games if len(games) <= number else games[number * -1:]
+
 def scrape(page):
 	try:
 		soup = BeautifulSoup(page, 'html.parser')
@@ -98,38 +101,45 @@ def scrape(page):
 
 def user_prompt(game_objs, scoring):
 	while (True):
-		query = raw_input('Enter filter type (date, min etc.) or q to quit: ').strip()
-		if (query == 'q'):
-			break
+		try:
+			query = raw_input('Enter filter type (date/min/recent) or q to quit: ').strip()
+			if (query == 'q'):
+				break
 
-		result = 0
-		filtered_games = []
-		if (query == 'date'):
-			query = raw_input('Enter dates separated by space: ').strip()
-			query_list = query.split(' ') # TODO: need to do input checking
-			date1 = query_list[0].split('-')
-			date2 = query_list[1].split('-')
-			beforeDate = datetime.date(int(date1[0]), int(date1[1]), int(date1[2]))
-			afterDate = datetime.date(int(date2[0]), int(date2[1]), int(date2[2]))
-			filtered_games = filter_by_date(game_objs, beforeDate, afterDate)
-			result = find_ave(filtered_games, scoring)
+			result = 0
+			filtered_games = []
+			if (query == 'date'):
+				query = raw_input('Enter dates separated by space: ').strip()
+				query_list = query.split(' ') # TODO: need to do input checking
+				date1 = query_list[0].split('-')
+				date2 = query_list[1].split('-')
+				beforeDate = datetime.date(int(date1[0]), int(date1[1]), int(date1[2]))
+				afterDate = datetime.date(int(date2[0]), int(date2[1]), int(date2[2]))
+				filtered_games = filter_by_date(game_objs, beforeDate, afterDate)
+				result = find_ave(filtered_games, scoring)
 
-		elif (query == 'min'):
-			query = raw_input('Enter one of {=,<,>} then value separated by space (e.g < 30): ').strip()
-			query_list = query.split(' ')
-			operator = query_list[0]
-			value = int(query_list[1]) # need to use as int
-			filtered_games = filter_by_min(game_objs, operator, value)
-			result = find_ave(filtered_games, scoring)
+			elif (query == 'min'):
+				query = raw_input('Enter one of {=,<,>} then value separated by space (e.g < 30): ').strip()
+				query_list = query.split(' ')
+				operator = query_list[0]
+				value = int(query_list[1]) # need to use as int
+				filtered_games = filter_by_min(game_objs, operator, value)
+				result = find_ave(filtered_games, scoring)
 
-		else:
-			print('invalid query')
-			continue
+			elif (query == 'recent'):
+				query = raw_input('Enter number of most recent games: ').strip()
+				filtered_games = filter_by_recent(game_objs, int(query))
+				result = find_ave(filtered_games, scoring)
 
-		# print query results
-		print_games(filtered_games, scoring)
-		print('Average: ' + str(result))
+			else:
+				print('invalid query')
+				continue
 
+			# print query results
+			print_games(filtered_games, scoring)
+			print('Average: ' + str(result) + ' in ' + str(len(filtered_games)) + ' games')
+		except:
+			print("incorrect input")
 
 	print('bye!')
 
